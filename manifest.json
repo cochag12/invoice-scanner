@@ -1,22 +1,22 @@
 {
   "name": "Invoice Scanner - סריקת חשבוניות",
-  "short_name": "Invoice Scanner",
-  "description": "אפליקציה לסריקת חשבוניות ושמירה ל-WhatsApp או OneDrive",
-  "start_url": "/invoice-scanner/",
-  "scope": "/invoice-scanner/",
+  "short_name": "Invoices",
+  "description": "סורק חשבוניות חכם עם שמירה ל-WhatsApp ו-OneDrive",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#6366f1",
   "theme_color": "#6366f1",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/invoice-scanner/icon-192.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/invoice-scanner/icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

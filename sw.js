@@ -1,31 +1,36 @@
 // Service Worker for Invoice Scanner PWA
 const CACHE_NAME = 'invoice-scanner-v2.7';
+
+// רשימת קבצים לשמירה בזיכרון (Offline Support)
 const urlsToCache = [
-  '/invoice-scanner/',
-  '/invoice-scanner/index.html',
-  '/invoice-scanner/manifest.json',
-  '/invoice-scanner/icon-192.png',
-  '/invoice-scanner/icon-512.png',
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
   'https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
 ];
 
 // Install event - cache files
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing...');
+  console.log('[SW] Installing v2.7...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('[SW] Caching files');
         return cache.addAll(urlsToCache);
       })
-      .then(() => self.skipWaiting())
+      .then(() => {
+        console.log('[SW] Skip waiting - activating immediately');
+        return self.skipWaiting();
+      })
   );
 });
 
 // Activate event - clean old caches
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating...');
+  console.log('[SW] Activating v2.7...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -36,44 +41,64 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => {
+      console.log('[SW] Claiming clients');
+      return self.clients.claim();
+    })
   );
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - Cache First Strategy with Network Update
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request)
-      .then((response) => {
-        // Cache hit - return response
-        if (response) {
-          return response;
+      .then((cachedResponse) => {
+        // Return cached version immediately
+        if (cachedResponse) {
+          // But also fetch from network to update cache
+          fetch(event.request).then((response) => {
+            if (response && response.status === 200 && response.type === 'basic') {
+              const responseToCache = response.clone();
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
+            }
+          }).catch(() => {
+            // Network failed, cached version is fine
+          });
+          
+          return cachedResponse;
         }
 
-        // Clone the request
-        const fetchRequest = event.request.clone();
-
-        return fetch(fetchRequest).then((response) => {
+        // No cache - fetch from network
+        return fetch(event.request).then((response) => {
           // Check if valid response
           if (!response || response.status !== 200 || response.type !== 'basic') {
             return response;
           }
 
-          // Clone the response
+          // Clone and cache for next time
           const responseToCache = response.clone();
-
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
 
           return response;
         }).catch(() => {
-          // Offline fallback
+          // Network failed and no cache - show offline message
           return new Response('אופליין - אנא התחבר לאינטרנט', {
+            status: 503,
+            statusText: 'Service Unavailable',
             headers: { 'Content-Type': 'text/plain; charset=utf-8' }
           });
         });
       })
   );
+});
+
+// Message event - for manual cache updates
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
