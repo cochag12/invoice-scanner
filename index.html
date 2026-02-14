@@ -6,22 +6,10 @@
     <meta name="theme-color" content="#6366f1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>📸 סריקת חשבוניות</title>
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Invoice Scanner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --text: #1e293b;
-            --text-secondary: #64748b;
-            --border: #e2e8f0;
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -31,63 +19,47 @@
 
         body {
             font-family: 'Heebo', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             min-height: 100vh;
-            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            color: #1e293b;
         }
 
         .header {
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
             color: white;
-            padding: 1rem;
+            padding: 1.5rem;
             text-align: center;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
         }
 
         .header h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .header .client-info {
-            font-size: 0.85rem;
-            opacity: 0.9;
-            margin-top: 0.25rem;
+            font-size: 1.75rem;
+            font-weight: 700;
         }
 
         .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 1rem;
-            padding-bottom: 5rem;
-        }
-
-        .camera-section {
-            background: white;
-            border-radius: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             padding: 2rem 1rem;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 1.5rem;
+            gap: 2rem;
         }
 
         .camera-btn {
-            width: 140px;
-            height: 140px;
+            width: 180px;
+            height: 180px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            background: white;
             border: none;
-            color: white;
-            font-size: 4rem;
+            font-size: 5rem;
             cursor: pointer;
-            box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
             transition: transform 0.2s, box-shadow 0.2s;
-            margin: 0 auto 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -95,181 +67,56 @@
 
         .camera-btn:active {
             transform: scale(0.95);
-            box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
-        .camera-btn-text {
-            font-size: 1rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .files-section {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 1.5rem;
-        }
-
-        .section-header {
+        .actions {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 2px solid var(--bg);
-        }
-
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text);
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+            max-width: 400px;
         }
 
         .file-count {
-            background: var(--primary);
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .file-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .file-item {
-            display: flex;
-            gap: 0.75rem;
-            align-items: center;
-            padding: 0.75rem;
-            background: var(--bg);
-            border-radius: 12px;
-            transition: background 0.2s;
-        }
-
-        .file-item:active {
-            background: #e2e8f0;
-        }
-
-        .file-thumbnail {
-            width: 60px;
-            height: 60px;
-            border-radius: 8px;
-            object-fit: cover;
-            background: #cbd5e1;
-            flex-shrink: 0;
-        }
-
-        .file-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .file-name {
-            font-weight: 500;
-            font-size: 0.9rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .file-meta {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            margin-top: 0.25rem;
-        }
-
-        .file-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .icon-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            border: none;
-            background: white;
-            color: var(--text-secondary);
-            font-size: 1.2rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .icon-btn:active {
-            transform: scale(0.9);
-        }
-
-        .icon-btn.delete {
-            color: var(--danger);
-        }
-
-        .icon-btn.delete:active {
-            background: #fee2e2;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 2rem;
-            color: var(--text-secondary);
-        }
-
-        .empty-state .icon {
-            font-size: 3rem;
-            margin-bottom: 0.5rem;
-            opacity: 0.5;
-        }
-
-        .bottom-actions {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
+            background: rgba(255,255,255,0.95);
             padding: 1rem;
-            box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
-            display: flex;
-            gap: 0.75rem;
+            border-radius: 16px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #6366f1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .btn {
-            flex: 1;
-            padding: 0.875rem;
-            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
             border: none;
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
             font-family: inherit;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
         }
 
         .btn-primary {
-            background: var(--success);
+            background: #25D366;
             color: white;
         }
 
-        .btn-primary:active {
-            background: #059669;
-            transform: scale(0.98);
-        }
-
-        .btn-secondary {
-            background: var(--bg);
-            color: var(--text);
-        }
-
-        .btn-secondary:active {
-            background: #e2e8f0;
-            transform: scale(0.98);
+        .btn-danger {
+            background: #ef4444;
+            color: white;
         }
 
         .btn:disabled {
@@ -333,10 +180,9 @@
 
         .camera-controls {
             background: rgba(0,0,0,0.8);
-            padding: 1.5rem;
+            padding: 2rem;
             display: flex;
             justify-content: center;
-            gap: 1rem;
         }
 
         .capture-btn {
@@ -344,7 +190,7 @@
             height: 70px;
             border-radius: 50%;
             border: 4px solid white;
-            background: var(--primary);
+            background: #6366f1;
             cursor: pointer;
             transition: transform 0.2s;
         }
@@ -372,55 +218,41 @@
             font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s;
             font-family: inherit;
         }
 
-        .preview-btn:active {
-            transform: scale(0.98);
-        }
-
         .preview-btn.retake {
-            background: var(--text-secondary);
+            background: #64748b;
             color: white;
         }
 
         .preview-btn.save {
-            background: var(--success);
+            background: #10b981;
             color: white;
         }
 
         /* Toast */
-        .toast-container {
+        .toast {
             position: fixed;
             top: 5rem;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            pointer-events: none;
-        }
-
-        .toast {
             background: #1e293b;
             color: white;
-            padding: 0.875rem 1.25rem;
+            padding: 1rem 1.5rem;
             border-radius: 12px;
-            font-size: 0.95rem;
+            font-size: 1rem;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             animation: slideDown 0.3s ease;
-            pointer-events: auto;
+            z-index: 2000;
         }
 
-        .toast.success { background: var(--success); }
-        .toast.error { background: var(--danger); }
-        .toast.warning { background: var(--warning); }
+        .toast.success { background: #10b981; }
+        .toast.error { background: #ef4444; }
 
         @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
         /* Loading */
@@ -460,75 +292,33 @@
             margin-top: 1rem;
             font-size: 1.1rem;
         }
-
-        /* Settings hint */
-        .settings-hint {
-            background: #fef3c7;
-            border: 1px solid var(--warning);
-            border-radius: 12px;
-            padding: 0.875rem;
-            margin-bottom: 1.5rem;
-            font-size: 0.85rem;
-            color: #92400e;
-        }
-
-        .settings-hint strong {
-            color: #78350f;
-        }
     </style>
 </head>
 <body>
-    <!-- Header -->
     <div class="header">
-        <h1>📸 סריקת חשבוניות</h1>
-        <div class="client-info">מערכת ניידת לסריקה ושמירה</div>
+        <h1>Invoice Scanner</h1>
     </div>
 
-    <!-- Main Container -->
     <div class="container">
-        <!-- Camera Section -->
-        <div class="camera-section">
-            <button class="camera-btn" onclick="openCamera()">
-                📷
+        <button class="camera-btn" onclick="openCamera()">
+            📷
+        </button>
+
+        <div class="actions">
+            <div class="file-count" id="fileCount">0 קבצים</div>
+            <button class="btn btn-primary" onclick="shareToWhatsApp()" id="shareBtn" disabled>
+                📤 שתף ל-WhatsApp
             </button>
-            <div class="camera-btn-text">לחץ לסריקת חשבונית</div>
+            <button class="btn btn-danger" onclick="clearAll()" id="clearBtn" disabled>
+                🗑️ מחק הכל
+            </button>
         </div>
-
-        <!-- Info Hint -->
-        <div class="settings-hint">
-            💡 <strong>טיפ:</strong> צלם בתאורה טובה ומרחק קרוב. התמונה תשתפר אוטומטית!
-        </div>
-
-        <!-- Files List -->
-        <div class="files-section">
-            <div class="section-header">
-                <div class="section-title">קבצים ממתינים</div>
-                <div class="file-count" id="fileCount">0</div>
-            </div>
-            <div class="file-list" id="fileList">
-                <div class="empty-state">
-                    <div class="icon">📭</div>
-                    <p>אין קבצים</p>
-                    <p style="font-size:0.85rem;">צלם חשבונית כדי להתחיל</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bottom Actions -->
-    <div class="bottom-actions">
-        <button class="btn btn-secondary" onclick="clearAll()" id="clearBtn" disabled>
-            🗑️ נקה הכל
-        </button>
-        <button class="btn btn-primary" onclick="exportZip()" id="exportBtn" disabled>
-            📦 ייצוא ZIP
-        </button>
     </div>
 
     <!-- Camera Modal -->
     <div class="camera-modal" id="cameraModal">
         <div class="camera-header">
-            <h2>סריקת חשבונית</h2>
+            <h2>צילום חשבונית</h2>
             <button class="camera-close" onclick="closeCamera()">×</button>
         </div>
         <div class="camera-container">
@@ -539,7 +329,7 @@
             <button class="capture-btn" onclick="capturePhoto()"></button>
         </div>
         <div class="preview-actions" id="previewActions">
-            <button class="preview-btn retake" onclick="retakePhoto()">🔄 צלם שוב</button>
+            <button class="preview-btn retake" onclick="retakePhoto()">🔄 שוב</button>
             <button class="preview-btn save" onclick="savePhoto()">✅ שמור</button>
         </div>
     </div>
@@ -550,12 +340,8 @@
         <div class="loading-text">מעבד...</div>
     </div>
 
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script>
-        // State
+        const { jsPDF } = window.jspdf;
         let db;
         let stream;
         let capturedImageData = null;
@@ -563,19 +349,16 @@
         // IndexedDB Setup
         function initDB() {
             return new Promise((resolve, reject) => {
-                const request = indexedDB.open('InvoiceScanner', 1);
-                
+                const request = indexedDB.open('InvoiceScannerSimple', 1);
                 request.onerror = () => reject(request.error);
                 request.onsuccess = () => {
                     db = request.result;
                     resolve(db);
                 };
-                
                 request.onupgradeneeded = (e) => {
                     const db = e.target.result;
-                    if (!db.objectStoreNames.contains('images')) {
-                        const store = db.createObjectStore('images', { keyPath: 'id', autoIncrement: true });
-                        store.createIndex('timestamp', 'timestamp', { unique: false });
+                    if (!db.objectStoreNames.contains('pdfs')) {
+                        db.createObjectStore('pdfs', { keyPath: 'id', autoIncrement: true });
                     }
                 };
             });
@@ -603,7 +386,7 @@
                 
                 modal.classList.add('active');
             } catch (err) {
-                showToast('שגיאה בפתיחת מצלמה: ' + err.message, 'error');
+                showToast('שגיאה בפתיחת מצלמה', 'error');
             }
         }
 
@@ -621,20 +404,15 @@
             const canvas = document.getElementById('previewCanvas');
             const ctx = canvas.getContext('2d');
             
-            // Set canvas size to video size
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            
-            // Draw video frame
             ctx.drawImage(video, 0, 0);
             
             // Enhance image
             enhanceImage(ctx, canvas.width, canvas.height);
             
-            // Store image data
             capturedImageData = canvas.toDataURL('image/jpeg', 0.9);
             
-            // Show preview
             video.style.display = 'none';
             canvas.style.display = 'block';
             document.getElementById('cameraControls').style.display = 'none';
@@ -644,21 +422,13 @@
         function enhanceImage(ctx, width, height) {
             const imageData = ctx.getImageData(0, 0, width, height);
             const data = imageData.data;
-            
-            // Increase contrast and brightness
             const contrast = 1.2;
             const brightness = 10;
             
             for (let i = 0; i < data.length; i += 4) {
-                // Apply contrast
-                data[i] = ((data[i] - 128) * contrast) + 128 + brightness;     // Red
-                data[i + 1] = ((data[i + 1] - 128) * contrast) + 128 + brightness; // Green
-                data[i + 2] = ((data[i + 2] - 128) * contrast) + 128 + brightness; // Blue
-                
-                // Clamp values
-                data[i] = Math.max(0, Math.min(255, data[i]));
-                data[i + 1] = Math.max(0, Math.min(255, data[i + 1]));
-                data[i + 2] = Math.max(0, Math.min(255, data[i + 2]));
+                data[i] = Math.max(0, Math.min(255, ((data[i] - 128) * contrast) + 128 + brightness));
+                data[i + 1] = Math.max(0, Math.min(255, ((data[i + 1] - 128) * contrast) + 128 + brightness));
+                data[i + 2] = Math.max(0, Math.min(255, ((data[i + 2] - 128) * contrast) + 128 + brightness));
             }
             
             ctx.putImageData(imageData, 0, 0);
@@ -678,26 +448,41 @@
         async function savePhoto() {
             if (!capturedImageData) return;
             
-            showLoading('שומר...');
+            showLoading('יוצר PDF...');
             
             try {
-                // Convert base64 to blob
-                const response = await fetch(capturedImageData);
-                const blob = await response.blob();
+                // Convert image to PDF
+                const img = new Image();
+                img.src = capturedImageData;
+                
+                await new Promise((resolve) => {
+                    img.onload = resolve;
+                });
+                
+                const pdf = new jsPDF({
+                    orientation: img.width > img.height ? 'landscape' : 'portrait',
+                    unit: 'px',
+                    format: [img.width, img.height]
+                });
+                
+                pdf.addImage(capturedImageData, 'JPEG', 0, 0, img.width, img.height);
+                const pdfBlob = pdf.output('blob');
                 
                 // Save to IndexedDB
-                const tx = db.transaction('images', 'readwrite');
-                const store = tx.objectStore('images');
+                const tx = db.transaction('pdfs', 'readwrite');
+                const store = tx.objectStore('pdfs');
                 
-                const image = {
-                    timestamp: Date.now(),
-                    filename: `invoice_${Date.now()}.jpg`,
-                    data: blob,
-                    size: blob.size
-                };
+                const timestamp = Date.now();
+                const date = new Date(timestamp);
+                const filename = `invoice_${date.getFullYear()}${String(date.getMonth()+1).padStart(2,'0')}${String(date.getDate()).padStart(2,'0')}_${String(date.getHours()).padStart(2,'0')}${String(date.getMinutes()).padStart(2,'0')}.pdf`;
                 
                 await new Promise((resolve, reject) => {
-                    const request = store.add(image);
+                    const request = store.add({
+                        timestamp,
+                        filename,
+                        data: pdfBlob,
+                        size: pdfBlob.size
+                    });
                     request.onsuccess = resolve;
                     request.onerror = reject;
                 });
@@ -705,143 +490,86 @@
                 hideLoading();
                 showToast('נשמר בהצלחה!', 'success');
                 closeCamera();
-                await loadFiles();
+                await updateFileCount();
                 
             } catch (err) {
                 hideLoading();
-                showToast('שגיאה בשמירה: ' + err.message, 'error');
+                showToast('שגיאה בשמירה', 'error');
             }
         }
 
         // File Management
-        async function loadFiles() {
-            const tx = db.transaction('images', 'readonly');
-            const store = tx.objectStore('images');
+        async function updateFileCount() {
+            const tx = db.transaction('pdfs', 'readonly');
+            const store = tx.objectStore('pdfs');
             const request = store.getAll();
             
             request.onsuccess = () => {
                 const files = request.result;
-                renderFiles(files);
-                updateButtons(files.length);
+                const count = files.length;
+                document.getElementById('fileCount').textContent = `${count} קבצים`;
+                document.getElementById('shareBtn').disabled = count === 0;
+                document.getElementById('clearBtn').disabled = count === 0;
             };
         }
 
-        function renderFiles(files) {
-            const container = document.getElementById('fileList');
-            document.getElementById('fileCount').textContent = files.length;
+        async function shareToWhatsApp() {
+            showLoading('מכין קבצים...');
             
-            if (files.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">📭</div>
-                        <p>אין קבצים</p>
-                        <p style="font-size:0.85rem;">צלם חשבונית כדי להתחיל</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = files.map(file => {
-                const url = URL.createObjectURL(file.data);
-                const date = new Date(file.timestamp).toLocaleString('he-IL');
-                const sizeKB = Math.round(file.size / 1024);
+            try {
+                const tx = db.transaction('pdfs', 'readonly');
+                const store = tx.objectStore('pdfs');
+                const request = store.getAll();
                 
-                return `
-                    <div class="file-item">
-                        <img src="${url}" class="file-thumbnail" alt="${file.filename}">
-                        <div class="file-info">
-                            <div class="file-name">${file.filename}</div>
-                            <div class="file-meta">${date} • ${sizeKB} KB</div>
-                        </div>
-                        <div class="file-actions">
-                            <button class="icon-btn" onclick="viewFile(${file.id})" title="צפייה">👁️</button>
-                            <button class="icon-btn delete" onclick="deleteFile(${file.id})" title="מחיקה">🗑️</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function updateButtons(count) {
-            document.getElementById('clearBtn').disabled = count === 0;
-            document.getElementById('exportBtn').disabled = count === 0;
-        }
-
-        async function viewFile(id) {
-            const tx = db.transaction('images', 'readonly');
-            const store = tx.objectStore('images');
-            const request = store.get(id);
-            
-            request.onsuccess = () => {
-                const file = request.result;
-                if (file) {
-                    const url = URL.createObjectURL(file.data);
-                    window.open(url, '_blank');
-                }
-            };
-        }
-
-        async function deleteFile(id) {
-            if (!confirm('למחוק קובץ זה?')) return;
-            
-            const tx = db.transaction('images', 'readwrite');
-            const store = tx.objectStore('images');
-            await store.delete(id);
-            
-            showToast('נמחק!', 'success');
-            await loadFiles();
+                request.onsuccess = async () => {
+                    const pdfs = request.result;
+                    
+                    if (pdfs.length === 0) {
+                        hideLoading();
+                        showToast('אין קבצים לשיתוף', 'error');
+                        return;
+                    }
+                    
+                    const files = pdfs.map(pdf => new File([pdf.data], pdf.filename, { type: 'application/pdf' }));
+                    
+                    if (navigator.share && navigator.canShare({ files })) {
+                        try {
+                            await navigator.share({
+                                title: 'חשבוניות',
+                                text: `${files.length} חשבוניות`,
+                                files
+                            });
+                            hideLoading();
+                            showToast('שותף בהצלחה!', 'success');
+                        } catch (err) {
+                            if (err.name !== 'AbortError') {
+                                hideLoading();
+                                showToast('השיתוף בוטל', 'error');
+                            } else {
+                                hideLoading();
+                            }
+                        }
+                    } else {
+                        hideLoading();
+                        showToast('השיתוף לא נתמך במכשיר זה', 'error');
+                    }
+                };
+                
+            } catch (err) {
+                hideLoading();
+                showToast('שגיאה בשיתוף', 'error');
+            }
         }
 
         async function clearAll() {
             if (!confirm('למחוק את כל הקבצים?')) return;
             
-            const tx = db.transaction('images', 'readwrite');
-            const store = tx.objectStore('images');
+            const tx = db.transaction('pdfs', 'readwrite');
+            const store = tx.objectStore('pdfs');
             await store.clear();
             
-            showToast('כל הקבצים נמחקו', 'success');
-            await loadFiles();
-        }
-
-        // Export
-        async function exportZip() {
-            showLoading('יוצר ZIP...');
-            
-            try {
-                const tx = db.transaction('images', 'readonly');
-                const store = tx.objectStore('images');
-                const request = store.getAll();
-                
-                request.onsuccess = async () => {
-                    const files = request.result;
-                    
-                    if (files.length === 0) {
-                        hideLoading();
-                        showToast('אין קבצים לייצוא', 'warning');
-                        return;
-                    }
-                    
-                    const zip = new JSZip();
-                    
-                    for (const file of files) {
-                        zip.file(file.filename, file.data);
-                    }
-                    
-                    const blob = await zip.generateAsync({ type: 'blob' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `invoices_${Date.now()}.zip`;
-                    a.click();
-                    
-                    hideLoading();
-                    showToast(`${files.length} קבצים יוצאו!`, 'success');
-                };
-                
-            } catch (err) {
-                hideLoading();
-                showToast('שגיאה בייצוא: ' + err.message, 'error');
-            }
+            showToast('נמחק!', 'success');
+            await updateFileCount();
         }
 
         // UI Helpers
@@ -849,7 +577,7 @@
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
             toast.textContent = msg;
-            document.getElementById('toastContainer').appendChild(toast);
+            document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
         }
 
@@ -866,10 +594,10 @@
         (async () => {
             try {
                 await initDB();
-                await loadFiles();
+                await updateFileCount();
                 console.log('✅ App initialized');
             } catch (err) {
-                showToast('שגיאה באתחול: ' + err.message, 'error');
+                showToast('שגיאה באתחול', 'error');
             }
         })();
     </script>
