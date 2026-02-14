@@ -1,5 +1,5 @@
 // Service Worker for Invoice Scanner PWA
-const CACHE_NAME = 'invoice-scanner-v2.5';
+const CACHE_NAME = 'invoice-scanner-v2.6';
 const urlsToCache = [
   '/invoice-scanner/',
   '/invoice-scanner/index.html',
