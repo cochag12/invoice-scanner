@@ -50,14 +50,15 @@
             flex-direction: column;
             padding: 1rem;
             overflow-y: auto;
-            max-height: calc(100vh - 80px - 280px);
         }
 
         .files-container {
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 1rem;
-            padding-bottom: 0;
+            padding-bottom: 2rem;
+            -webkit-overflow-scrolling: touch;
         }
 
         .actions-container {
@@ -66,6 +67,7 @@
             background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             padding: 1rem;
             padding-top: 1.5rem;
+            padding-bottom: 1.5rem;
             box-shadow: 0 -4px 12px rgba(0,0,0,0.15);
         }
 
@@ -98,6 +100,15 @@
             width: 100%;
             max-width: 400px;
             margin: 0 auto;
+        }
+
+        .actions-row {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .actions-row .btn {
+            flex: 1;
         }
 
         /* File List */
@@ -495,7 +506,7 @@
                     📤 שתף הכל <span class="badge" id="totalBadge">0</span>
                 </button>
                 <button class="btn btn-secondary" onclick="saveAllToOneDrive()" id="saveAllBtn" style="width: 100%; background: #0078d4;">
-                    ☁️ שמור הכל ל-OneDrive <span class="badge" id="totalBadge2">0</span>
+                    ☁️ שתף הכל ל-OneDrive <span class="badge" id="totalBadge2">0</span>
                 </button>
             </div>
         </div>
@@ -504,12 +515,14 @@
     <!-- Actions Container - למטה (קבוע) -->
     <div class="actions-container">
         <div class="actions">
-            <button class="btn btn-primary" onclick="shareNewFiles()" id="shareBtn" disabled>
-                📤 שתף ל-WhatsApp <span class="badge" id="newBadge">0</span>
-            </button>
-            <button class="btn btn-secondary" onclick="saveToOneDrive()" id="onedriveBtn" disabled style="background: #0078d4;">
-                ☁️ שמור ל-OneDrive <span class="badge" id="onedriveBadge">0</span>
-            </button>
+            <div class="actions-row">
+                <button class="btn btn-primary" onclick="shareNewFiles()" id="shareBtn" disabled>
+                    📤 שתף ל-WhatsApp <span class="badge" id="newBadge">0</span>
+                </button>
+                <button class="btn btn-secondary" onclick="saveToOneDrive()" id="onedriveBtn" disabled style="background: #0078d4;">
+                    ☁️ שתף ל-OneDrive <span class="badge" id="onedriveBadge">0</span>
+                </button>
+            </div>
             <button class="camera-btn" onclick="openCamera()">
                 📷
             </button>
@@ -769,7 +782,7 @@
                         </div>
                         <div class="file-actions">
                             <button class="icon-btn" onclick="shareFile(${file.id})" title="שתף">📤</button>
-                            <button class="icon-btn" onclick="saveFileToOneDrive(${file.id})" title="שמור ל-OneDrive">☁️</button>
+                            <button class="icon-btn" onclick="saveFileToOneDrive(${file.id})" title="שתף ל-OneDrive">☁️</button>
                             <button class="icon-btn" onclick="deleteFile(${file.id})" title="מחק">🗑️</button>
                         </div>
                     </div>
@@ -1018,7 +1031,7 @@
                     
                     if (navigator.share && navigator.canShare({ files: [file] })) {
                         await navigator.share({
-                            title: 'שמור ל-OneDrive',
+                            title: 'שתף ל-OneDrive',
                             text: pdf.filename,
                             files: [file]
                         });
@@ -1060,7 +1073,7 @@
                     if (navigator.share && navigator.canShare({ files })) {
                         try {
                             await navigator.share({
-                                title: 'שמור ל-OneDrive',
+                                title: 'שתף ל-OneDrive',
                                 text: `${files.length} חשבוניות`,
                                 files
                             });
@@ -1114,7 +1127,7 @@
                     if (navigator.share && navigator.canShare({ files })) {
                         try {
                             await navigator.share({
-                                title: 'שמור הכל ל-OneDrive',
+                                title: 'שתף הכל ל-OneDrive',
                                 text: `${files.length} חשבוניות`,
                                 files
                             });
