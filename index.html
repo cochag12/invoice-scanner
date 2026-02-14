@@ -170,6 +170,11 @@
             color: white;
         }
 
+        .header-btn.clean {
+            background: #f59e0b;
+            color: white;
+        }
+
         .header-btn.share-wa {
             background: #25D366;
             color: white;
@@ -509,7 +514,7 @@
 <body>
     <div class="header">
         <h1>Invoice Scanner</h1>
-        <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem;">v2.7</div>
+        <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem;">v2.8</div>
     </div>
 
     <!-- Files Section - למעלה -->
@@ -524,7 +529,7 @@
                     <button class="header-btn share-od" onclick="saveAllToOneDrive()" id="saveAllBtn">
                         ☁️ שתף הכל <span class="badge" id="totalBadge2">0</span>
                     </button>
-                    <button class="header-btn delete" onclick="clearAll()" id="clearBtn">🗑️ מחק</button>
+                    <button class="header-btn clean" onclick="deleteShared()" id="cleanBtn">🧹 נקה משותפים</button>
                 </div>
             </div>
             <div class="file-list" id="fileList">
@@ -579,7 +584,7 @@
     </div>
 
     <!-- Footer -->
-    <div class="footer">v2.7 - Fixed Scroll</div>
+    <div class="footer">v2.8 - Smart Delete</div>
 
     <script>
         // ====================================
@@ -1048,6 +1053,34 @@
             
             showToast('נמחק!', 'success');
             await updateFileCount();
+        }
+
+        async function deleteShared() {
+            const tx = db.transaction('pdfs', 'readonly');
+            const store = tx.objectStore('pdfs');
+            const request = store.getAll();
+            
+            request.onsuccess = async () => {
+                const files = request.result;
+                const sharedFiles = files.filter(f => f.shared);
+                
+                if (sharedFiles.length === 0) {
+                    showToast('אין קבצים משותפים למחיקה', 'error');
+                    return;
+                }
+                
+                if (!confirm(`למחוק ${sharedFiles.length} קבצים משותפים?`)) return;
+                
+                const txWrite = db.transaction('pdfs', 'readwrite');
+                const storeWrite = txWrite.objectStore('pdfs');
+                
+                for (const file of sharedFiles) {
+                    await storeWrite.delete(file.id);
+                }
+                
+                showToast(`נמחקו ${sharedFiles.length} קבצים משותפים!`, 'success');
+                await updateFileCount();
+            };
         }
 
         // OneDrive Functions (Share API)
