@@ -1,9 +1,11 @@
 // Service Worker for Invoice Scanner PWA
-const CACHE_NAME = 'invoice-scanner-v2.3';
+const CACHE_NAME = 'invoice-scanner-v2.4';
 const urlsToCache = [
   '/invoice-scanner/',
   '/invoice-scanner/index.html',
   '/invoice-scanner/manifest.json',
+  '/invoice-scanner/icon-192.png',
+  '/invoice-scanner/icon-512.png',
   'https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
 ];
