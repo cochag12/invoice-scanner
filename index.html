@@ -78,52 +78,6 @@
             max-width: 400px;
         }
 
-        .file-count {
-            background: rgba(255,255,255,0.95);
-            padding: 1rem;
-            border-radius: 16px;
-            text-align: center;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #6366f1;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .btn {
-            padding: 1rem 1.5rem;
-            border-radius: 16px;
-            border: none;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: inherit;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary {
-            background: #25D366;
-            color: white;
-        }
-
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
         /* File List */
         .files-section {
             width: 100%;
@@ -136,10 +90,35 @@
         }
 
         .files-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .files-title {
             font-size: 1.2rem;
             font-weight: 600;
-            margin-bottom: 1rem;
             color: #6366f1;
+        }
+
+        .header-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            background: #ef4444;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .header-btn:active {
+            transform: scale(0.95);
         }
 
         .file-list {
@@ -155,6 +134,12 @@
             padding: 1rem;
             background: #f8fafc;
             border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .file-item.shared {
+            background: #f0fdf4;
+            border: 2px solid #10b981;
         }
 
         .file-thumbnail {
@@ -167,6 +152,10 @@
             align-items: center;
             justify-content: center;
             font-size: 2rem;
+        }
+
+        .file-item.shared .file-thumbnail {
+            background: #d1fae5;
         }
 
         .file-info {
@@ -216,6 +205,55 @@
             text-align: center;
             padding: 2rem;
             color: #64748b;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: #25D366;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6366f1;
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.3);
+            padding: 0.25rem 0.5rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .share-all-container {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px solid #f1f5f9;
         }
 
         /* Camera Modal */
@@ -403,7 +441,7 @@
 <body>
     <div class="header">
         <h1>Invoice Scanner</h1>
-        <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem;">v2.1</div>
+        <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem;">v2.2</div>
     </div>
 
     <div class="container">
@@ -412,12 +450,8 @@
         </button>
 
         <div class="actions">
-            <div class="file-count" id="fileCount">0 קבצים</div>
-            <button class="btn btn-primary" onclick="shareToWhatsApp()" id="shareBtn" disabled>
-                📤 שתף ל-WhatsApp
-            </button>
-            <button class="btn btn-danger" onclick="clearAll()" id="clearBtn" disabled>
-                🗑️ מחק הכל
+            <button class="btn btn-primary" onclick="shareNewFiles()" id="shareBtn" disabled>
+                📤 שתף ל-WhatsApp <span class="badge" id="newBadge">0</span>
             </button>
         </div>
     </div>
@@ -425,8 +459,16 @@
     <!-- Files Section -->
     <div class="container" style="padding-top: 0;">
         <div class="files-section" id="filesSection" style="display: none;">
-            <div class="files-header">קבצים ששמרת:</div>
+            <div class="files-header">
+                <div class="files-title">קבצים ששמרת:</div>
+                <button class="header-btn" onclick="clearAll()" id="clearBtn">🗑️ מחק הכל</button>
+            </div>
             <div class="file-list" id="fileList"></div>
+            <div class="share-all-container">
+                <button class="btn btn-secondary" onclick="shareAllFiles()" id="shareAllBtn" style="width: 100%;">
+                    📤 שתף הכל <span class="badge" id="totalBadge">0</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -456,12 +498,12 @@
     </div>
 
     <!-- Footer -->
-    <div class="footer">v2.1 - PDF Scanner with File List</div>
+    <div class="footer">v2.2 - Smart Share Tracking</div>
 
     <script>
         // ====================================
-        // Invoice Scanner v2.1
-        // Simple PDF + WhatsApp Share + File List
+        // Invoice Scanner v2.2
+        // Smart Sharing with Tracking
         // ====================================
         
         const { jsPDF } = window.jspdf;
@@ -604,7 +646,8 @@
                         timestamp,
                         filename,
                         data: pdfBlob,
-                        size: pdfBlob.size
+                        size: pdfBlob.size,
+                        shared: false
                     });
                     request.onsuccess = resolve;
                     request.onerror = reject;
@@ -629,16 +672,19 @@
             
             request.onsuccess = () => {
                 const files = request.result;
-                const count = files.length;
+                const totalCount = files.length;
+                const newCount = files.filter(f => !f.shared).length;
                 
-                // Update counter
-                document.getElementById('fileCount').textContent = `${count} קבצים`;
-                document.getElementById('shareBtn').disabled = count === 0;
-                document.getElementById('clearBtn').disabled = count === 0;
+                // Update badges
+                document.getElementById('newBadge').textContent = newCount;
+                document.getElementById('totalBadge').textContent = totalCount;
+                
+                // Enable/disable buttons
+                document.getElementById('shareBtn').disabled = newCount === 0;
                 
                 // Show/hide file list
                 const filesSection = document.getElementById('filesSection');
-                if (count > 0) {
+                if (totalCount > 0) {
                     filesSection.style.display = 'block';
                     renderFileList(files);
                 } else {
@@ -659,17 +705,18 @@
                 const date = new Date(file.timestamp).toLocaleString('he-IL', {
                     day: '2-digit',
                     month: '2-digit',
-                    year: 'numeric',
                     hour: '2-digit',
                     minute: '2-digit'
                 });
                 const sizeKB = Math.round(file.size / 1024);
+                const sharedClass = file.shared ? 'shared' : '';
+                const sharedBadge = file.shared ? ' <span style="color: #10b981; font-weight: 600;">✓ שותף</span>' : '';
                 
                 return `
-                    <div class="file-item">
-                        <div class="file-thumbnail">📄</div>
+                    <div class="file-item ${sharedClass}">
+                        <div class="file-thumbnail">${file.shared ? '✅' : '📄'}</div>
                         <div class="file-info">
-                            <div class="file-name">${file.filename}</div>
+                            <div class="file-name">${file.filename}${sharedBadge}</div>
                             <div class="file-meta">${date} • ${sizeKB} KB</div>
                         </div>
                         <div class="file-actions">
@@ -698,6 +745,9 @@
                             title: pdf.filename,
                             files: [file]
                         });
+                        
+                        // Mark as shared
+                        await markAsShared(id);
                         showToast('שותף בהצלחה!', 'success');
                     } else {
                         showToast('השיתוף לא נתמך', 'error');
@@ -707,6 +757,130 @@
                 if (err.name !== 'AbortError') {
                     showToast('שגיאה בשיתוף', 'error');
                 }
+            }
+        }
+
+        async function markAsShared(id) {
+            const tx = db.transaction('pdfs', 'readwrite');
+            const store = tx.objectStore('pdfs');
+            const request = store.get(id);
+            
+            request.onsuccess = async () => {
+                const pdf = request.result;
+                if (pdf) {
+                    pdf.shared = true;
+                    await store.put(pdf);
+                    await updateFileCount();
+                }
+            };
+        }
+
+        async function shareNewFiles() {
+            showLoading('מכין קבצים חדשים...');
+            
+            try {
+                const tx = db.transaction('pdfs', 'readonly');
+                const store = tx.objectStore('pdfs');
+                const request = store.getAll();
+                
+                request.onsuccess = async () => {
+                    const allFiles = request.result;
+                    const newFiles = allFiles.filter(f => !f.shared);
+                    
+                    if (newFiles.length === 0) {
+                        hideLoading();
+                        showToast('אין קבצים חדשים לשיתוף', 'error');
+                        return;
+                    }
+                    
+                    const files = newFiles.map(pdf => new File([pdf.data], pdf.filename, { type: 'application/pdf' }));
+                    
+                    if (navigator.share && navigator.canShare({ files })) {
+                        try {
+                            await navigator.share({
+                                title: 'חשבוניות חדשות',
+                                text: `${files.length} חשבוניות`,
+                                files
+                            });
+                            
+                            // Mark all as shared
+                            for (const pdf of newFiles) {
+                                await markAsShared(pdf.id);
+                            }
+                            
+                            hideLoading();
+                            showToast('שותף בהצלחה!', 'success');
+                        } catch (err) {
+                            if (err.name !== 'AbortError') {
+                                hideLoading();
+                                showToast('השיתוף בוטל', 'error');
+                            } else {
+                                hideLoading();
+                            }
+                        }
+                    } else {
+                        hideLoading();
+                        showToast('השיתוף לא נתמך', 'error');
+                    }
+                };
+                
+            } catch (err) {
+                hideLoading();
+                showToast('שגיאה בשיתוף', 'error');
+            }
+        }
+
+        async function shareAllFiles() {
+            showLoading('מכין את כל הקבצים...');
+            
+            try {
+                const tx = db.transaction('pdfs', 'readonly');
+                const store = tx.objectStore('pdfs');
+                const request = store.getAll();
+                
+                request.onsuccess = async () => {
+                    const pdfs = request.result;
+                    
+                    if (pdfs.length === 0) {
+                        hideLoading();
+                        showToast('אין קבצים לשיתוף', 'error');
+                        return;
+                    }
+                    
+                    const files = pdfs.map(pdf => new File([pdf.data], pdf.filename, { type: 'application/pdf' }));
+                    
+                    if (navigator.share && navigator.canShare({ files })) {
+                        try {
+                            await navigator.share({
+                                title: 'חשבוניות',
+                                text: `${files.length} חשבוניות`,
+                                files
+                            });
+                            
+                            // Mark all as shared
+                            for (const pdf of pdfs) {
+                                await markAsShared(pdf.id);
+                            }
+                            
+                            hideLoading();
+                            showToast('שותף בהצלחה!', 'success');
+                        } catch (err) {
+                            if (err.name !== 'AbortError') {
+                                hideLoading();
+                                showToast('השיתוף בוטל', 'error');
+                            } else {
+                                hideLoading();
+                            }
+                        }
+                    } else {
+                        hideLoading();
+                        showToast('השיתוף לא נתמך', 'error');
+                    }
+                };
+                
+            } catch (err) {
+                hideLoading();
+                showToast('שגיאה בשיתוף', 'error');
             }
         }
 
