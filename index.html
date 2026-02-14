@@ -19,15 +19,19 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
         body {
             font-family: 'Heebo', sans-serif;
             background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            min-height: 100vh;
             display: flex;
             flex-direction: column;
             color: #1e293b;
             margin: 0;
-            overflow: hidden;
         }
 
         .header {
@@ -37,6 +41,11 @@
             padding: 1.5rem;
             text-align: center;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
         }
 
         .header h1 {
@@ -44,32 +53,29 @@
             font-weight: 700;
         }
 
-        .container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 1rem;
-            overflow-y: auto;
-        }
-
         .files-container {
-            flex: 1;
+            position: fixed;
+            top: 80px;
+            bottom: 200px;
+            left: 0;
+            right: 0;
             overflow-y: auto;
             overflow-x: hidden;
             padding: 1rem;
-            padding-bottom: 1rem;
             -webkit-overflow-scrolling: touch;
-            min-height: 0;
         }
 
         .actions-container {
-            position: sticky;
+            position: fixed;
             bottom: 0;
+            left: 0;
+            right: 0;
             background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             padding: 1rem;
             padding-top: 1.5rem;
             padding-bottom: 1.5rem;
             box-shadow: 0 -4px 12px rgba(0,0,0,0.15);
+            z-index: 100;
         }
 
         .camera-btn {
@@ -503,7 +509,7 @@
 <body>
     <div class="header">
         <h1>Invoice Scanner</h1>
-        <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem;">v2.6</div>
+        <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem;">v2.7</div>
     </div>
 
     <!-- Files Section - למעלה -->
@@ -573,7 +579,7 @@
     </div>
 
     <!-- Footer -->
-    <div class="footer">v2.6 - Compact UI</div>
+    <div class="footer">v2.7 - Fixed Scroll</div>
 
     <script>
         // ====================================
@@ -780,7 +786,17 @@
                 return;
             }
             
-            container.innerHTML = files.map(file => {
+            // מיון: חדשים (לא משותפים) למעלה, אחר כך לפי תאריך
+            const sortedFiles = files.sort((a, b) => {
+                // קודם לפי shared status
+                if (a.shared !== b.shared) {
+                    return a.shared ? 1 : -1; // false (חדשים) למעלה
+                }
+                // אם שניהם באותו סטטוס, מיין לפי תאריך (חדשים יותר למעלה)
+                return b.timestamp - a.timestamp;
+            });
+            
+            container.innerHTML = sortedFiles.map(file => {
                 const date = new Date(file.timestamp).toLocaleString('he-IL', {
                     day: '2-digit',
                     month: '2-digit',
