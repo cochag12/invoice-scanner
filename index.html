@@ -292,11 +292,24 @@
             margin-top: 1rem;
             font-size: 1.1rem;
         }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 0.5rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.7);
+            background: rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>Invoice Scanner</h1>
+        <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem;">v2.0</div>
     </div>
 
     <div class="container">
@@ -340,7 +353,15 @@
         <div class="loading-text">מעבד...</div>
     </div>
 
+    <!-- Footer -->
+    <div class="footer">v2.0 - Simple PDF Scanner</div>
+
     <script>
+        // ====================================
+        // Invoice Scanner v2.0
+        // Simple PDF + WhatsApp Share
+        // ====================================
+        
         const { jsPDF } = window.jspdf;
         let db;
         let stream;
