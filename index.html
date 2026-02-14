@@ -256,94 +256,6 @@
             border-top: 2px solid #f1f5f9;
         }
 
-        /* Settings Modal */
-        .settings-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 1500;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .settings-modal.active {
-            display: flex;
-        }
-
-        .settings-content {
-            background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .settings-header {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: #1e293b;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .close-settings {
-            background: none;
-            border: none;
-            font-size: 2rem;
-            cursor: pointer;
-            color: #64748b;
-            padding: 0;
-        }
-
-        .settings-section {
-            margin-bottom: 1.5rem;
-        }
-
-        .settings-label {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #475569;
-            margin-bottom: 0.5rem;
-        }
-
-        .settings-value {
-            background: #f1f5f9;
-            padding: 1rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            color: #334155;
-            margin-bottom: 0.75rem;
-            word-break: break-all;
-        }
-
-        .settings-value.empty {
-            color: #94a3b8;
-            font-style: italic;
-        }
-
-        .settings-hint {
-            background: #fef3c7;
-            border: 1px solid #f59e0b;
-            border-radius: 8px;
-            padding: 0.75rem;
-            font-size: 0.85rem;
-            color: #92400e;
-            margin-top: 0.75rem;
-        }
-
-        .btn-onedrive {
-            background: #3b82f6;
-            color: white;
-        }
-
         /* Camera Modal */
         .camera-modal {
             display: none;
@@ -528,16 +440,8 @@
 </head>
 <body>
     <div class="header">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div style="flex: 1;"></div>
-            <div style="flex: 1; text-align: center;">
-                <h1>Invoice Scanner</h1>
-                <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem;">v2.3</div>
-            </div>
-            <div style="flex: 1; text-align: left;">
-                <button onclick="openSettings()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0.5rem;">⚙️</button>
-            </div>
-        </div>
+        <h1>Invoice Scanner</h1>
+        <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem;">v2.3</div>
     </div>
 
     <div class="container">
@@ -549,7 +453,7 @@
             <button class="btn btn-primary" onclick="shareNewFiles()" id="shareBtn" disabled>
                 📤 שתף ל-WhatsApp <span class="badge" id="newBadge">0</span>
             </button>
-            <button class="btn btn-onedrive" onclick="saveToOneDrive()" id="onedriveBtn" disabled>
+            <button class="btn btn-secondary" onclick="saveToOneDrive()" id="onedriveBtn" disabled style="background: #0078d4;">
                 ☁️ שמור ל-OneDrive <span class="badge" id="onedriveBadge">0</span>
             </button>
         </div>
@@ -567,7 +471,7 @@
                 <button class="btn btn-secondary" onclick="shareAllFiles()" id="shareAllBtn" style="width: 100%; margin-bottom: 0.75rem;">
                     📤 שתף הכל <span class="badge" id="totalBadge">0</span>
                 </button>
-                <button class="btn btn-onedrive" onclick="saveAllToOneDrive()" id="saveAllBtn" style="width: 100%;">
+                <button class="btn btn-secondary" onclick="saveAllToOneDrive()" id="saveAllBtn" style="width: 100%; background: #0078d4;">
                     ☁️ שמור הכל ל-OneDrive <span class="badge" id="totalBadge2">0</span>
                 </button>
             </div>
@@ -599,42 +503,19 @@
         <div class="loading-text">מעבד...</div>
     </div>
 
-    <!-- Settings Modal -->
-    <div class="settings-modal" id="settingsModal">
-        <div class="settings-content">
-            <div class="settings-header">
-                <span>⚙️ הגדרות OneDrive</span>
-                <button class="close-settings" onclick="closeSettings()">×</button>
-            </div>
-            
-            <div class="settings-section">
-                <div class="settings-label">נתיב OneDrive:</div>
-                <div class="settings-value" id="onedrivePathDisplay">לא נבחר</div>
-                <button class="btn btn-onedrive" onclick="selectOneDriveFolder()" style="width: 100%;">
-                    📁 בחר תיקיית OneDrive
-                </button>
-                <div class="settings-hint">
-                    💡 <strong>טיפ:</strong> בחר את התיקייה שבה OneDrive שומר קבצים במחשב שלך.<br>
-                    בדרך כלל: <code>C:\Users\שם\OneDrive\חשבוניות</code>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Footer -->
-    <div class="footer">v2.3 - WhatsApp + OneDrive</div>
+    <div class="footer">v2.3 - WhatsApp + OneDrive Share</div>
 
     <script>
         // ====================================
         // Invoice Scanner v2.3
-        // WhatsApp Share + OneDrive Save
+        // WhatsApp + OneDrive (Share API)
         // ====================================
         
         const { jsPDF } = window.jspdf;
         let db;
         let stream;
         let capturedImageData = null;
-        let onedriveDirectoryHandle = null;
 
         // IndexedDB Setup
         function initDB() {
@@ -838,18 +719,17 @@
                 });
                 const sizeKB = Math.round(file.size / 1024);
                 const sharedClass = file.shared ? 'shared' : '';
-                const sharedBadge = file.shared ? ' <span style="color: #10b981; font-weight: 600; font-size: 0.85rem;">✓ שותף</span>' : '';
-                const icon = file.shared ? '✅' : '📄';
+                const sharedBadge = file.shared ? ' <span style="color: #10b981; font-weight: 600;">✓ שותף</span>' : '';
                 
                 return `
                     <div class="file-item ${sharedClass}">
-                        <div class="file-thumbnail">${icon}</div>
+                        <div class="file-thumbnail">${file.shared ? '✅' : '📄'}</div>
                         <div class="file-info">
                             <div class="file-name">${file.filename}${sharedBadge}</div>
                             <div class="file-meta">${date} • ${sizeKB} KB</div>
                         </div>
                         <div class="file-actions">
-                            <button class="icon-btn" onclick="shareFile(${file.id})" title="שתף ב-WhatsApp">📤</button>
+                            <button class="icon-btn" onclick="shareFile(${file.id})" title="שתף">📤</button>
                             <button class="icon-btn" onclick="saveFileToOneDrive(${file.id})" title="שמור ל-OneDrive">☁️</button>
                             <button class="icon-btn" onclick="deleteFile(${file.id})" title="מחק">🗑️</button>
                         </div>
@@ -1084,76 +964,9 @@
             await updateFileCount();
         }
 
-        // OneDrive Functions
-        function openSettings() {
-            document.getElementById('settingsModal').classList.add('active');
-            loadOneDrivePath();
-        }
-
-        function closeSettings() {
-            document.getElementById('settingsModal').classList.remove('active');
-        }
-
-        function loadOneDrivePath() {
-            const savedPath = localStorage.getItem('onedriveDirectory');
-            const display = document.getElementById('onedrivePathDisplay');
-            
-            if (savedPath) {
-                display.textContent = savedPath;
-                display.classList.remove('empty');
-            } else {
-                display.textContent = 'לא נבחר';
-                display.classList.add('empty');
-            }
-        }
-
-        async function selectOneDriveFolder() {
-            try {
-                // Check if File System Access API is supported
-                if (!('showDirectoryPicker' in window)) {
-                    showToast('הדפדפן לא תומך - השתמש ב-Chrome/Edge', 'error');
-                    return;
-                }
-                
-                // Request directory access
-                const dirHandle = await window.showDirectoryPicker({
-                    mode: 'readwrite',
-                    startIn: 'documents'
-                });
-                
-                // Store the handle
-                onedriveDirectoryHandle = dirHandle;
-                
-                // Save path to localStorage
-                localStorage.setItem('onedriveDirectory', dirHandle.name);
-                
-                // Update display
-                loadOneDrivePath();
-                showToast('תיקייה נבחרה בהצלחה!', 'success');
-                
-            } catch (err) {
-                if (err.name !== 'AbortError') {
-                    showToast('שגיאה בבחירת תיקייה', 'error');
-                }
-            }
-        }
-
+        // OneDrive Functions (Share API)
         async function saveFileToOneDrive(id) {
-            // Check if directory is selected
-            if (!onedriveDirectoryHandle && !localStorage.getItem('onedriveDirectory')) {
-                showToast('יש לבחור תיקיית OneDrive תחילה', 'error');
-                openSettings();
-                return;
-            }
-            
             try {
-                // If we don't have the handle, request it again
-                if (!onedriveDirectoryHandle) {
-                    showToast('יש לבחור תיקייה מחדש', 'error');
-                    openSettings();
-                    return;
-                }
-                
                 const tx = db.transaction('pdfs', 'readonly');
                 const store = tx.objectStore('pdfs');
                 const request = store.get(id);
@@ -1162,30 +975,31 @@
                     const pdf = request.result;
                     if (!pdf) return;
                     
-                    try {
-                        // Create file in OneDrive directory
-                        const fileHandle = await onedriveDirectoryHandle.getFileHandle(pdf.filename, { create: true });
-                        const writable = await fileHandle.createWritable();
-                        await writable.write(pdf.data);
-                        await writable.close();
+                    const file = new File([pdf.data], pdf.filename, { type: 'application/pdf' });
+                    
+                    if (navigator.share && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            title: 'שמור ל-OneDrive',
+                            text: pdf.filename,
+                            files: [file]
+                        });
                         
                         // Mark as shared
                         await markAsShared(id);
-                        showToast('נשמר ל-OneDrive!', 'success');
-                        
-                    } catch (err) {
-                        showToast('שגיאה בשמירה ל-OneDrive', 'error');
-                        console.error(err);
+                        showToast('שותף בהצלחה!', 'success');
+                    } else {
+                        showToast('השיתוף לא נתמך', 'error');
                     }
                 };
-                
             } catch (err) {
-                showToast('שגיאה בגישה ל-OneDrive', 'error');
+                if (err.name !== 'AbortError') {
+                    showToast('שגיאה בשיתוף', 'error');
+                }
             }
         }
 
         async function saveToOneDrive() {
-            showLoading('שומר ל-OneDrive...');
+            showLoading('מכין קבצים...');
             
             try {
                 const tx = db.transaction('pdfs', 'readonly');
@@ -1198,52 +1012,49 @@
                     
                     if (newFiles.length === 0) {
                         hideLoading();
-                        showToast('אין קבצים חדשים לשמירה', 'error');
+                        showToast('אין קבצים חדשים', 'error');
                         return;
                     }
                     
-                    // Check if directory is selected
-                    if (!onedriveDirectoryHandle && !localStorage.getItem('onedriveDirectory')) {
-                        hideLoading();
-                        showToast('יש לבחור תיקיית OneDrive תחילה', 'error');
-                        openSettings();
-                        return;
-                    }
+                    const files = newFiles.map(pdf => new File([pdf.data], pdf.filename, { type: 'application/pdf' }));
                     
-                    if (!onedriveDirectoryHandle) {
-                        hideLoading();
-                        showToast('יש לבחור תיקייה מחדש', 'error');
-                        openSettings();
-                        return;
-                    }
-                    
-                    // Save each file
-                    let saved = 0;
-                    for (const pdf of newFiles) {
+                    if (navigator.share && navigator.canShare({ files })) {
                         try {
-                            const fileHandle = await onedriveDirectoryHandle.getFileHandle(pdf.filename, { create: true });
-                            const writable = await fileHandle.createWritable();
-                            await writable.write(pdf.data);
-                            await writable.close();
-                            await markAsShared(pdf.id);
-                            saved++;
+                            await navigator.share({
+                                title: 'שמור ל-OneDrive',
+                                text: `${files.length} חשבוניות`,
+                                files
+                            });
+                            
+                            // Mark all as shared
+                            for (const pdf of newFiles) {
+                                await markAsShared(pdf.id);
+                            }
+                            
+                            hideLoading();
+                            showToast('שותף בהצלחה!', 'success');
                         } catch (err) {
-                            console.error('Error saving file:', err);
+                            if (err.name !== 'AbortError') {
+                                hideLoading();
+                                showToast('השיתוף בוטל', 'error');
+                            } else {
+                                hideLoading();
+                            }
                         }
+                    } else {
+                        hideLoading();
+                        showToast('השיתוף לא נתמך', 'error');
                     }
-                    
-                    hideLoading();
-                    showToast(`${saved} קבצים נשמרו ל-OneDrive!`, 'success');
                 };
                 
             } catch (err) {
                 hideLoading();
-                showToast('שגיאה בשמירה', 'error');
+                showToast('שגיאה בשיתוף', 'error');
             }
         }
 
         async function saveAllToOneDrive() {
-            showLoading('שומר את כל הקבצים...');
+            showLoading('מכין את כל הקבצים...');
             
             try {
                 const tx = db.transaction('pdfs', 'readonly');
@@ -1255,47 +1066,44 @@
                     
                     if (pdfs.length === 0) {
                         hideLoading();
-                        showToast('אין קבצים לשמירה', 'error');
+                        showToast('אין קבצים', 'error');
                         return;
                     }
                     
-                    // Check if directory is selected
-                    if (!onedriveDirectoryHandle && !localStorage.getItem('onedriveDirectory')) {
-                        hideLoading();
-                        showToast('יש לבחור תיקיית OneDrive תחילה', 'error');
-                        openSettings();
-                        return;
-                    }
+                    const files = pdfs.map(pdf => new File([pdf.data], pdf.filename, { type: 'application/pdf' }));
                     
-                    if (!onedriveDirectoryHandle) {
-                        hideLoading();
-                        showToast('יש לבחור תיקייה מחדש', 'error');
-                        openSettings();
-                        return;
-                    }
-                    
-                    // Save each file
-                    let saved = 0;
-                    for (const pdf of pdfs) {
+                    if (navigator.share && navigator.canShare({ files })) {
                         try {
-                            const fileHandle = await onedriveDirectoryHandle.getFileHandle(pdf.filename, { create: true });
-                            const writable = await fileHandle.createWritable();
-                            await writable.write(pdf.data);
-                            await writable.close();
-                            await markAsShared(pdf.id);
-                            saved++;
+                            await navigator.share({
+                                title: 'שמור הכל ל-OneDrive',
+                                text: `${files.length} חשבוניות`,
+                                files
+                            });
+                            
+                            // Mark all as shared
+                            for (const pdf of pdfs) {
+                                await markAsShared(pdf.id);
+                            }
+                            
+                            hideLoading();
+                            showToast('שותף בהצלחה!', 'success');
                         } catch (err) {
-                            console.error('Error saving file:', err);
+                            if (err.name !== 'AbortError') {
+                                hideLoading();
+                                showToast('השיתוף בוטל', 'error');
+                            } else {
+                                hideLoading();
+                            }
                         }
+                    } else {
+                        hideLoading();
+                        showToast('השיתוף לא נתמך', 'error');
                     }
-                    
-                    hideLoading();
-                    showToast(`${saved} קבצים נשמרו ל-OneDrive!`, 'success');
                 };
                 
             } catch (err) {
                 hideLoading();
-                showToast('שגיאה בשמירה', 'error');
+                showToast('שגיאה בשיתוף', 'error');
             }
         }
 
