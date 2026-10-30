@@ -116,6 +116,13 @@
 
         .actions-row .btn {
             flex: 1;
+            padding: 1rem 0.5rem;
+            font-size: 1rem;
+        }
+
+        .btn-email {
+            background: #ea580c;
+            color: white;
         }
 
         /* File List */
@@ -197,6 +204,7 @@
 
         .file-item {
             display: flex;
+            flex-wrap: wrap;
             gap: 0.75rem;
             align-items: center;
             padding: 0.75rem;
@@ -248,6 +256,8 @@
         .file-actions {
             display: flex;
             gap: 0.5rem;
+            width: 100%;
+            justify-content: flex-end;
         }
 
         .icon-btn {
@@ -388,6 +398,23 @@
             padding: 2rem;
             display: flex;
             justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .camera-finish {
+            display: none;
+            position: absolute;
+            left: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            border: none;
+            background: #10b981;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
         }
 
         .capture-btn {
@@ -407,8 +434,8 @@
         .preview-actions {
             display: none;
             background: rgba(0,0,0,0.8);
-            padding: 1.5rem;
-            gap: 1rem;
+            padding: 1.5rem 1rem;
+            gap: 0.5rem;
         }
 
         .preview-actions.active {
@@ -417,10 +444,10 @@
 
         .preview-btn {
             flex: 1;
-            padding: 1rem;
+            padding: 1rem 0.5rem;
             border-radius: 12px;
             border: none;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             font-family: inherit;
@@ -428,6 +455,12 @@
 
         .preview-btn.retake {
             background: #64748b;
+            color: white;
+        }
+
+        .preview-btn.next {
+            flex: 1.4;
+            background: #6366f1;
             color: white;
         }
 
@@ -514,7 +547,7 @@
 <body>
     <div class="header">
         <h1>Invoice Scanner</h1>
-        <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem;">v2.8</div>
+        <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem;">v2.9</div>
     </div>
 
     <!-- Files Section - למעלה -->
@@ -546,10 +579,13 @@
         <div class="actions">
             <div class="actions-row">
                 <button class="btn btn-primary" onclick="shareNewFiles()" id="shareBtn" disabled>
-                    📤 שתף ל-WhatsApp <span class="badge" id="newBadge">0</span>
+                    📤 WhatsApp <span class="badge" id="newBadge">0</span>
                 </button>
                 <button class="btn btn-secondary" onclick="saveToOneDrive()" id="onedriveBtn" disabled style="background: #0078d4;">
-                    ☁️ שתף ל-OneDrive <span class="badge" id="onedriveBadge">0</span>
+                    ☁️ OneDrive <span class="badge" id="onedriveBadge">0</span>
+                </button>
+                <button class="btn btn-email" onclick="shareNewFilesToEmail()" id="emailBtn" disabled>
+                    ✉️ מייל <span class="badge" id="emailBadge">0</span>
                 </button>
             </div>
             <button class="camera-btn" onclick="openCamera()">
@@ -561,7 +597,7 @@
     <!-- Camera Modal -->
     <div class="camera-modal" id="cameraModal">
         <div class="camera-header">
-            <h2>צילום חשבונית</h2>
+            <h2 id="cameraTitle">סריקה - דף 1</h2>
             <button class="camera-close" onclick="closeCamera()">×</button>
         </div>
         <div class="camera-container">
@@ -570,10 +606,12 @@
         </div>
         <div class="camera-controls" id="cameraControls">
             <button class="capture-btn" onclick="capturePhoto()"></button>
+            <button class="camera-finish" id="cameraFinishBtn" onclick="savePhoto()">✅ סיום</button>
         </div>
         <div class="preview-actions" id="previewActions">
             <button class="preview-btn retake" onclick="retakePhoto()">🔄 שוב</button>
-            <button class="preview-btn save" onclick="savePhoto()">✅ שמור</button>
+            <button class="preview-btn next" onclick="nextPhoto()">➡️ צילום הבא</button>
+            <button class="preview-btn save" onclick="savePhoto()">✅ סיום</button>
         </div>
     </div>
 
@@ -584,7 +622,7 @@
     </div>
 
     <!-- Footer -->
-    <div class="footer">v2.8 - Smart Delete</div>
+    <div class="footer">v2.9 - Multi-page + Email</div>
 
     <script>
         // ====================================
@@ -596,6 +634,7 @@
         let db;
         let stream;
         let capturedImageData = null;
+        let capturedPages = []; // דפים שאושרו ב"צילום הבא" בסריקה הנוכחית
 
         // IndexedDB Setup
         function initDB() {
@@ -630,18 +669,31 @@
                 });
                 
                 video.srcObject = stream;
-                video.style.display = 'block';
-                document.getElementById('previewCanvas').style.display = 'none';
-                document.getElementById('cameraControls').style.display = 'flex';
-                document.getElementById('previewActions').classList.remove('active');
-                
+                capturedPages = [];
+                showLiveCamera();
+
                 modal.classList.add('active');
             } catch (err) {
                 showToast('שגיאה בפתיחת מצלמה', 'error');
             }
         }
 
-        function closeCamera() {
+        function showLiveCamera() {
+            document.getElementById('cameraVideo').style.display = 'block';
+            document.getElementById('previewCanvas').style.display = 'none';
+            document.getElementById('cameraControls').style.display = 'flex';
+            document.getElementById('previewActions').classList.remove('active');
+            document.getElementById('cameraTitle').textContent = `סריקה - דף ${capturedPages.length + 1}`;
+            document.getElementById('cameraFinishBtn').style.display = capturedPages.length > 0 ? 'block' : 'none';
+            capturedImageData = null;
+        }
+
+        function closeCamera(skipConfirm) {
+            if (skipConfirm !== true && capturedPages.length > 0) {
+                const count = capturedPages.length + (capturedImageData ? 1 : 0);
+                if (!confirm(count === 1 ? 'לבטל את הסריקה? הדף לא יישמר' : `לבטל את הסריקה? ${count} דפים לא יישמרו`)) return;
+            }
+            capturedPages = [];
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
                 stream = null;
@@ -686,62 +738,71 @@
         }
 
         function retakePhoto() {
-            const video = document.getElementById('cameraVideo');
-            const canvas = document.getElementById('previewCanvas');
-            
-            video.style.display = 'block';
-            canvas.style.display = 'none';
-            document.getElementById('cameraControls').style.display = 'flex';
-            document.getElementById('previewActions').classList.remove('active');
-            capturedImageData = null;
+            showLiveCamera();
+        }
+
+        function nextPhoto() {
+            if (!capturedImageData) return;
+            capturedPages.push(capturedImageData);
+            showLiveCamera();
         }
 
         async function savePhoto() {
-            if (!capturedImageData) return;
-            
+            const pages = capturedImageData ? [...capturedPages, capturedImageData] : capturedPages;
+            if (pages.length === 0) return;
+
             showLoading('יוצר PDF...');
-            
+
             try {
-                // Convert image to PDF
-                const img = new Image();
-                img.src = capturedImageData;
-                
-                await new Promise((resolve) => {
-                    img.onload = resolve;
-                });
-                
-                const pdf = new jsPDF({
-                    orientation: img.width > img.height ? 'landscape' : 'portrait',
-                    unit: 'px',
-                    format: [img.width, img.height]
-                });
-                
-                pdf.addImage(capturedImageData, 'JPEG', 0, 0, img.width, img.height);
+                // Convert images to one PDF - each image is one page
+                let pdf;
+                for (const pageData of pages) {
+                    const img = new Image();
+                    img.src = pageData;
+
+                    await new Promise((resolve) => {
+                        img.onload = resolve;
+                    });
+
+                    const orientation = img.width > img.height ? 'landscape' : 'portrait';
+                    if (!pdf) {
+                        pdf = new jsPDF({
+                            orientation,
+                            unit: 'px',
+                            format: [img.width, img.height]
+                        });
+                    } else {
+                        pdf.addPage([img.width, img.height], orientation);
+                    }
+
+                    pdf.addImage(pageData, 'JPEG', 0, 0, img.width, img.height);
+                }
                 const pdfBlob = pdf.output('blob');
-                
+
                 // Save to IndexedDB
                 const tx = db.transaction('pdfs', 'readwrite');
                 const store = tx.objectStore('pdfs');
                 
                 const timestamp = Date.now();
                 const date = new Date(timestamp);
-                const filename = `invoice_${date.getFullYear()}${String(date.getMonth()+1).padStart(2,'0')}${String(date.getDate()).padStart(2,'0')}_${String(date.getHours()).padStart(2,'0')}${String(date.getMinutes()).padStart(2,'0')}.pdf`;
-                
+                const filename = `scan_${date.getFullYear()}${String(date.getMonth()+1).padStart(2,'0')}${String(date.getDate()).padStart(2,'0')}_${String(date.getHours()).padStart(2,'0')}${String(date.getMinutes()).padStart(2,'0')}${String(date.getSeconds()).padStart(2,'0')}.pdf`;
+
                 await new Promise((resolve, reject) => {
                     const request = store.add({
                         timestamp,
                         filename,
                         data: pdfBlob,
                         size: pdfBlob.size,
+                        pages: pages.length,
                         shared: false
                     });
                     request.onsuccess = resolve;
                     request.onerror = reject;
                 });
-                
+
                 hideLoading();
-                showToast('נשמר בהצלחה!', 'success');
-                closeCamera();
+                showToast(pages.length > 1 ? `נשמר PDF עם ${pages.length} דפים!` : 'נשמר בהצלחה!', 'success');
+                closeCamera(true);
                 await updateFileCount();
                 
             } catch (err) {
@@ -764,13 +825,15 @@
                 // Update badges
                 document.getElementById('newBadge').textContent = newCount;
                 document.getElementById('onedriveBadge').textContent = newCount;
+                document.getElementById('emailBadge').textContent = newCount;
                 document.getElementById('totalBadge').textContent = totalCount;
                 document.getElementById('totalBadge2').textContent = totalCount;
                 
                 // Enable/disable buttons
                 document.getElementById('shareBtn').disabled = newCount === 0;
                 document.getElementById('onedriveBtn').disabled = newCount === 0;
-                
+                document.getElementById('emailBtn').disabled = newCount === 0;
+
                 // Show/hide file list
                 const filesSection = document.getElementById('filesSection');
                 filesSection.style.display = 'block';
@@ -809,6 +872,7 @@
                     minute: '2-digit'
                 });
                 const sizeKB = Math.round(file.size / 1024);
+                const pagesText = file.pages > 1 ? `${file.pages} דפים • ` : '';
                 const sharedClass = file.shared ? 'shared' : '';
                 const sharedBadge = file.shared ? ' <span style="color: #10b981; font-weight: 600;">✓ שותף</span>' : '';
                 
@@ -817,11 +881,12 @@
                         <div class="file-thumbnail">${file.shared ? '✅' : '📄'}</div>
                         <div class="file-info">
                             <div class="file-name">${file.filename}${sharedBadge}</div>
-                            <div class="file-meta">${date} • ${sizeKB} KB</div>
+                            <div class="file-meta">${date} • ${pagesText}${sizeKB} KB</div>
                         </div>
                         <div class="file-actions">
                             <button class="icon-btn" onclick="shareFile(${file.id})" title="שתף">📤</button>
                             <button class="icon-btn" onclick="saveFileToOneDrive(${file.id})" title="שתף ל-OneDrive">☁️</button>
+                            <button class="icon-btn" onclick="shareFileToEmail(${file.id})" title="שתף למייל">✉️</button>
                             <button class="icon-btn" onclick="deleteFile(${file.id})" title="מחק">🗑️</button>
                         </div>
                     </div>
@@ -1224,6 +1289,54 @@
                 hideLoading();
                 showToast('שגיאה בשיתוף', 'error');
             }
+        }
+
+        // Email Functions (Share API)
+        // דפדפן לא יכול לצרף קובץ למייל ישירות - נפתח חלון השיתוף, והנושא והטקסט ממולאים
+        async function sendPdfsToEmail(pdfs) {
+            const files = pdfs.map(pdf => new File([pdf.data], pdf.filename, { type: 'application/pdf' }));
+
+            if (!navigator.share || !navigator.canShare({ files })) {
+                showToast('השיתוף לא נתמך', 'error');
+                return;
+            }
+
+            try {
+                await navigator.share({
+                    title: files.length === 1 ? pdfs[0].filename : `${files.length} מסמכים סרוקים`,
+                    text: files.length === 1 ? 'מצורף מסמך סרוק' : `מצורפים ${files.length} מסמכים סרוקים`,
+                    files
+                });
+
+                // Mark as shared
+                for (const pdf of pdfs) {
+                    await markAsShared(pdf.id);
+                }
+                showToast('שותף בהצלחה!', 'success');
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    showToast('שגיאה בשיתוף', 'error');
+                }
+            }
+        }
+
+        function shareFileToEmail(id) {
+            const request = db.transaction('pdfs', 'readonly').objectStore('pdfs').get(id);
+            request.onsuccess = () => {
+                if (request.result) sendPdfsToEmail([request.result]);
+            };
+        }
+
+        function shareNewFilesToEmail() {
+            const request = db.transaction('pdfs', 'readonly').objectStore('pdfs').getAll();
+            request.onsuccess = () => {
+                const newFiles = request.result.filter(f => !f.shared);
+                if (newFiles.length === 0) {
+                    showToast('אין קבצים חדשים לשיתוף', 'error');
+                    return;
+                }
+                sendPdfsToEmail(newFiles);
+            };
         }
 
         // UI Helpers
