@@ -1,5 +1,5 @@
 // Service Worker for Invoice Scanner PWA
-const CACHE_NAME = 'invoice-scanner-v2.9';
+const CACHE_NAME = 'invoice-scanner-v2.10';
 
 // רשימת הקבצים שיישמרו בזיכרון לשימוש אופליין
 const ASSETS_TO_CACHE = [

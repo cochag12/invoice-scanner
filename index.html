@@ -239,6 +239,10 @@
             min-width: 0;
         }
 
+        .file-thumbnail, .file-info {
+            cursor: pointer;
+        }
+
         .file-name {
             font-weight: 600;
             font-size: 0.85rem;
@@ -372,6 +376,32 @@
             font-size: 2rem;
             cursor: pointer;
             padding: 0.5rem;
+        }
+
+        .viewer-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .viewer-pages {
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+            padding: 0.5rem;
+            background: #1e293b;
+        }
+
+        .viewer-pages img {
+            display: block;
+            width: 100%;
+            margin-bottom: 0.5rem;
+            background: white;
+        }
+
+        .viewer-pages.zoomed img {
+            width: 200%;
         }
 
         .camera-container {
@@ -547,7 +577,7 @@
 <body>
     <div class="header">
         <h1>Invoice Scanner</h1>
-        <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem;">v2.9</div>
+        <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem;">v2.10</div>
     </div>
 
     <!-- Files Section - למעלה -->
@@ -615,6 +645,15 @@
         </div>
     </div>
 
+    <!-- File Viewer -->
+    <div class="camera-modal" id="viewerModal">
+        <div class="camera-header">
+            <div class="viewer-title" id="viewerTitle"></div>
+            <button class="camera-close" onclick="history.back()">×</button>
+        </div>
+        <div class="viewer-pages" id="viewerPages" dir="ltr" onclick="toggleViewerZoom(event)"></div>
+    </div>
+
     <!-- Loading -->
     <div class="loading" id="loading">
         <div class="spinner"></div>
@@ -622,7 +661,7 @@
     </div>
 
     <!-- Footer -->
-    <div class="footer">v2.9 - Multi-page + Email</div>
+    <div class="footer">v2.10 - View scans</div>
 
     <script>
         // ====================================
@@ -756,7 +795,7 @@
             try {
                 // Convert images to one PDF - each image is one page
                 let pdf;
-                for (const pageData of pages) {
+                for (const [pageIndex, pageData] of pages.entries()) {
                     const img = new Image();
                     img.src = pageData;
 
@@ -775,7 +814,8 @@
                         pdf.addPage([img.width, img.height], orientation);
                     }
 
-                    pdf.addImage(pageData, 'JPEG', 0, 0, img.width, img.height);
+                    // שם ייחודי לכל דף, אחרת jsPDF מאחד שתי תמונות זהות לאחת
+                    pdf.addImage(pageData, 'JPEG', 0, 0, img.width, img.height, `page${pageIndex}`);
                 }
                 const pdfBlob = pdf.output('blob');
 
@@ -878,8 +918,8 @@
                 
                 return `
                     <div class="file-item ${sharedClass}">
-                        <div class="file-thumbnail">${file.shared ? '✅' : '📄'}</div>
-                        <div class="file-info">
+                        <div class="file-thumbnail" onclick="viewFile(${file.id})">${file.shared ? '✅' : '📄'}</div>
+                        <div class="file-info" onclick="viewFile(${file.id})">
                             <div class="file-name">${file.filename}${sharedBadge}</div>
                             <div class="file-meta">${date} • ${pagesText}${sizeKB} KB</div>
                         </div>
@@ -1338,6 +1378,88 @@
                 sendPdfsToEmail(newFiles);
             };
         }
+
+        // File Viewer
+        const VIEWPORT_LOCKED = document.querySelector('meta[name="viewport"]').content;
+        let viewerUrls = [];
+
+        // jsPDF שומר כל דף כ-JPEG שלם בתוך ה-PDF, אז אפשר להציג אותו בלי ספריית PDF
+        function extractPdfImages(buffer) {
+            const bytes = new Uint8Array(buffer);
+            const text = new TextDecoder('latin1').decode(bytes);
+            const pattern = /<<[^>]*\/Subtype \/Image[^>]*>>\s*stream\r?\n/g;
+            const images = [];
+            let match;
+
+            while ((match = pattern.exec(text))) {
+                const lengthMatch = match[0].match(/\/Length (\d+)/);
+                if (!lengthMatch) continue;
+                const start = match.index + match[0].length;
+                const length = Number(lengthMatch[1]);
+                images.push(new Blob([bytes.subarray(start, start + length)], { type: 'image/jpeg' }));
+                pattern.lastIndex = start + length;
+            }
+
+            return images;
+        }
+
+        function viewFile(id) {
+            const request = db.transaction('pdfs', 'readonly').objectStore('pdfs').get(id);
+
+            request.onsuccess = async () => {
+                const pdf = request.result;
+                if (!pdf) return;
+
+                const images = extractPdfImages(await pdf.data.arrayBuffer());
+                if (images.length === 0) {
+                    showToast('לא ניתן להציג את הקובץ', 'error');
+                    return;
+                }
+
+                const container = document.getElementById('viewerPages');
+                viewerUrls = images.map(image => URL.createObjectURL(image));
+                container.innerHTML = viewerUrls.map(url => `<img src="${url}" alt="">`).join('');
+                container.scrollTop = 0;
+                document.getElementById('viewerTitle').textContent =
+                    images.length > 1 ? `${images.length} דפים • ${pdf.filename}` : pdf.filename;
+
+                // צביטה להגדלה מותרת רק במסך הצפייה
+                document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0';
+                document.getElementById('viewerModal').classList.add('active');
+
+                // כפתור "חזור" של הטלפון סוגר את הצפייה ולא את האפליקציה
+                history.pushState({ viewer: true }, '');
+            };
+        }
+
+        function closeViewer() {
+            const container = document.getElementById('viewerPages');
+            document.getElementById('viewerModal').classList.remove('active');
+            container.classList.remove('zoomed');
+            container.innerHTML = '';
+            viewerUrls.forEach(url => URL.revokeObjectURL(url));
+            viewerUrls = [];
+            document.querySelector('meta[name="viewport"]').content = VIEWPORT_LOCKED;
+        }
+
+        // הקשה על דף מגדילה או מקטינה, והנקודה שהוקשה נשארת מתחת לאצבע
+        function toggleViewerZoom(e) {
+            if (e.target.tagName !== 'IMG') return;
+            const container = document.getElementById('viewerPages');
+            const before = e.target.getBoundingClientRect();
+            const fx = (e.clientX - before.left) / before.width;
+            const fy = (e.clientY - before.top) / before.height;
+
+            container.classList.toggle('zoomed');
+
+            const after = e.target.getBoundingClientRect();
+            container.scrollLeft += after.left + after.width * fx - e.clientX;
+            container.scrollTop += after.top + after.height * fy - e.clientY;
+        }
+
+        window.addEventListener('popstate', () => {
+            if (document.getElementById('viewerModal').classList.contains('active')) closeViewer();
+        });
 
         // UI Helpers
         function showToast(msg, type = 'info') {
